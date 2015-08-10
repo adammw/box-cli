@@ -1,0 +1,16 @@
+{
+  "name": "box-cli",
+  "version": "0.0.0",
+  "description": "CLI for Box Content API",
+  "main": "index.js",
+  "author": "Adam M-W <adman.com@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "commander": "^2.8.1",
+    "internet-timestamp": "0.0.1",
+    "walk": "^2.3.9"
+  },
+  "bin": {
+    "box": "./bin/box.js"
+  }
+}
