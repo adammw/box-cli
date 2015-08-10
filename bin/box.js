@@ -1,9 +1,10 @@
 var BoxAPIClient = require('box-api');
 var crypto = require('crypto');
 var fs = require('fs');
-var timestamp = require('internet-timestamp')
+var timestamp = require('internet-timestamp');
 var path = require('path');
 var walk = require('walk');
+var debug = require('debug')('box-cli');
 
 var VERSION = require('../package').version;
 
@@ -26,7 +27,7 @@ program
       if (stat.isFile()) {
         sourcePath = path.dirname(sourcePath);
       }
-      var walker = walk.walk(source, { followLinks: program.followLinks});
+      var walker = walk.walk(source, { followLinks: options.followLinks});
       var filesUploaded = 0;
       var filesSkipped = 0;
       var filesErrored = 0;
@@ -67,12 +68,13 @@ program
                   content_modified_at: timestamp(fileStat.mtime)
                 }, function(err, item) {
                   if (err) throw err;
+                  debug('file %s uploaded', uploadPath);
                   filesUploaded += 1;
                   console.log('%d files processed', (filesSkipped + filesUploaded));
                   next();
                 });
               } else if (sha1 !== file.data.sha1) {
-                if (program.overwrite) {
+                if (options.overwrite) {
                   file.update(fs.createReadStream(filePath), {
                     filename: fileStat.name,
                     sha1: sha1,
@@ -80,16 +82,19 @@ program
                     content_modified_at: timestamp(fileStat.mtime)
                   }, function(err, item) {
                     if (err) throw err;
+                    debug('file %s updated', uploadPath);
                     filesUploaded += 1;
                     console.log('%d files processed', (filesSkipped + filesUploaded));
                     next();
                   });
                 } else {
+                  debug('file %s did not match sha1 but overwrite is not set', uploadPath);
                   filesErrored += 1;
                   console.log('err: file exists', uploadPath);
                   next();
                 }
               } else {
+                debug('file %s skipped', uploadPath);
                 filesSkipped += 1;
                 console.log('%d files processed', (filesSkipped + filesUploaded));
                 next();
